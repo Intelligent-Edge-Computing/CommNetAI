@@ -1,0 +1,21 @@
+graph G {
+    rankdir=LR;
+    node [shape=ellipse, style="bold", color=black, fillcolor=white];
+
+    Server [label="Server"];
+    F [shape=cloud, label="F", style="bold", color=black, fillcolor=white];
+    AP [label="AP"];
+    u_1 [label="u₁"];
+    u_2 [label="u₂"];
+    u_3 [label="u₃"];
+    u_4 [label="u₄"];
+    u_5 [label="u₅"];
+
+    Server -- F;
+    F -- AP;
+    AP -- u_1 [style=dashed];
+    AP -- u_2 [style=dashed];
+    AP -- u_3 [style=dashed];
+    AP -- u_4 [style=dashed];
+    AP -- u_5 [style=dashed];
+}

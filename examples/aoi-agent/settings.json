@@ -1,0 +1,61 @@
+{
+  "simulation":{
+    "stopTime": 15.0,
+    "numRuns": 7000,
+    "startRunId": 1
+  },
+
+
+  "server":{
+    "stochasticProcess": "PoisDist",
+    "Deterministic": {
+      "statusUpdateInterval": 0.001
+    },
+    "PoisDist": {
+       "statusUpdateRate": 1,
+       "bound": 0,
+       "step": 0.1
+    },
+    "UniformDist": {
+      "min": 10,
+      "max": 30
+    },
+    "NormalDist": {
+      "mean": 25,
+      "variance": 3
+    },
+    "ExpDist": {
+      "mean": 0.005,
+      "bound": 0
+    }
+  },
+
+
+  "forwarder":{
+    "stochasticProcess": "Deterministic",
+    "Deterministic": {
+      "serviceDelay": 0.001
+    },
+    "PoisDist": {
+      "serviceRate": 1,
+      "bound": 0
+    },
+    "UniformDist": {
+      "min": 0.01,
+      "max": 0.03
+    },
+    "NormalDist": {
+      "mean": 0.025,
+      "variance": 3
+    },
+    "ExpDist": {
+      "mean": 0.001,
+      "bound": 0
+    }
+  },
+  "dbPath": "/workspace/data/logs.db",
+  "log": {
+    "clear": false,
+    "enable": false
+  }
+}

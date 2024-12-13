@@ -5,9 +5,13 @@ import time
 
 import numpy as np
 
-import gym
-from gym import spaces
-from gym.utils import seeding
+# import gym
+import gymnasium as gym
+
+from gymnasium import spaces
+from gymnasium.utils import seeding
+# from gym import spaces
+# from gym.utils import seeding
 from enum import IntEnum
 
 from ns3gym.start_sim import start_sim_script, build_ns3_project
@@ -417,7 +421,11 @@ class Ns3Env(gym.Env):
         self.envDirty = True
         return self.get_state()
 
-    def reset(self):
+    def reset(self, seed=None, options=None, **kwargs):
+        if seed is not None:
+            self.seed(seed)
+        if options is not None:
+            pass
         if not self.envDirty:
             obs = self.ns3ZmqBridge.get_obs()
             return obs
@@ -434,7 +442,8 @@ class Ns3Env(gym.Env):
         # get first observations
         self.ns3ZmqBridge.rx_env_state()
         obs = self.ns3ZmqBridge.get_obs()
-        return obs
+        info = {}
+        return obs, info
 
     def render(self, mode='human'):
         return
