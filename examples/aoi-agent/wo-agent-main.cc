@@ -26,9 +26,9 @@
 *                                                          [u₁]   [u₂]   [u₃]   [u₄]   [u₅]
 */
 
-#include "ap-app.h"
+#include "ap/ap-app.h"
 #include "fwd-service.h" // 引入自定义队列
-#include "server-app.h"
+#include "server/server-app.h"
 #include "status-util.h"
 #include "user-app.h"
 
@@ -42,6 +42,8 @@
 #include "ns3/stats-module.h"
 #include "ns3/traffic-control-helper.h"
 #include "ns3/yans-wifi-helper.h"
+
+#include "ns3/flow-monitor-module.h"
 
 #include <cstdlib>
 #include <ctime>
@@ -208,6 +210,10 @@ void setupNetwork(json& config)
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
 
+    // 启用 FlowMonitor
+    FlowMonitorHelper flowHelper;
+    Ptr<FlowMonitor> monitor = flowHelper.InstallAll();
+
 }
 
 void
@@ -321,6 +327,7 @@ int main(int argc, char *argv[])
             output->SetFilePrefix("/workspace/data/logs");
             output->Output(data);
         }
+
         Simulator::Destroy();
         NS_LOG_INFO("Results: TP=" << logger.TP << ", FP=" << logger.FP << ", TN=" << logger.TN << ", FN=" << logger.FN <<", Accuracy=" << 1.0*(logger.TP +logger.TN) / (logger.TP + logger.FP + logger.TN + logger.FN));
         logger.logAccuracy();

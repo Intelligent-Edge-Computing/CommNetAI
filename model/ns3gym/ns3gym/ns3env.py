@@ -13,6 +13,7 @@ from gymnasium.utils import seeding
 # from gym import spaces
 # from gym.utils import seeding
 from enum import IntEnum
+from typing import Any, Dict
 
 from ns3gym.start_sim import start_sim_script, build_ns3_project
 
@@ -413,8 +414,12 @@ class Ns3Env(gym.Env):
         obs = self.ns3ZmqBridge.get_obs()
         reward = self.ns3ZmqBridge.get_reward()
         done = self.ns3ZmqBridge.is_game_over()
+        terminated = self.ns3ZmqBridge.is_game_over()
+        truncated = self.ns3ZmqBridge.is_game_over()
         extraInfo = self.ns3ZmqBridge.get_extra_info()
-        return (obs, reward, done, extraInfo)
+        info:Dict[str, Any] = {"ExtroInfo": extraInfo}
+        # return (obs, reward, done, extraInfo)
+        return obs, reward, terminated, truncated, info
 
     def step(self, action):
         response = self.ns3ZmqBridge.step(action)
@@ -428,7 +433,9 @@ class Ns3Env(gym.Env):
             pass
         if not self.envDirty:
             obs = self.ns3ZmqBridge.get_obs()
-            return obs
+            extraInfo = self.ns3ZmqBridge.get_extra_info()
+            info:Dict[str, Any] = {"ExtroInfo": extraInfo}
+            return obs, info
 
         if self.ns3ZmqBridge:
             self.ns3ZmqBridge.close()
@@ -442,7 +449,8 @@ class Ns3Env(gym.Env):
         # get first observations
         self.ns3ZmqBridge.rx_env_state()
         obs = self.ns3ZmqBridge.get_obs()
-        info = {}
+        extraInfo = self.ns3ZmqBridge.get_extra_info()
+        info:Dict[str, Any] = {"ExtroInfo": extraInfo}
         return obs, info
 
     def render(self, mode='human'):

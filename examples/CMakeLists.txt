@@ -1,4 +1,4 @@
-build_lib_example(
+examples/CMakeLists.txtbuild_lib_example(
   NAME interference-pattern
   SOURCE_FILES interference-pattern/mygym.cc
                interference-pattern/sim.cc
@@ -52,29 +52,30 @@ build_lib_example(
 build_lib_example(
   NAME aoi-agent
   SOURCE_FILES aoi-agent/sim.cc
-#        aoi-agent/main.cc
-        aoi-agent/ap-app.cc
-        aoi-agent/server-app.cc
-        aoi-agent/user-app.cc
+#        aoi-agent/wo-agent-main.cc
+        aoi-agent/ap/ap-app.cc
+        aoi-agent/server/server-app.cc
+        aoi-agent/user/user-app.cc
         aoi-agent/status-util.cc
         aoi-agent/logger.cc
-        aoi-agent/fwd-service.cc
-        aoi-agent/server-queue.cc
-        aoi-agent/ap-app.h
-        aoi-agent/server-app.h
-        aoi-agent/user-app.h
+        aoi-agent/fwd/fwd-service.cc
+        aoi-agent/server/server-queue.cc
+        aoi-agent/ap/ap-app.h
+        aoi-agent/server/server-app.h
+        aoi-agent/user/user-app.h
         aoi-agent/status-util.h
         aoi-agent/logger.h
         aoi-agent/json.hpp
-        aoi-agent/fwd-service.h
+        aoi-agent/fwd/fwd-service.h
         aoi-agent/event-time-tag.h
         aoi-agent/packet-type-tag.h
-        aoi-agent/server-queue.h
+        aoi-agent/server/server-queue.h
   LIBRARIES_TO_LINK
     ${libcore}
     ${ns3-libs}
     ${ns3-contrib-libs}
     ${libopengym}
+    ${libflow-monitor}
 )
 
 build_lib_example(

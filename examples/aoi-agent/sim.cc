@@ -24,13 +24,13 @@
 *                                                             /   |   \  ...
 *                                                             /    |    \
 *                                                          [u₁]   [u₂]   [u₃]   [u₄]   [u₅]
-*/
+ */
 
-#include "ap-app.h"
-#include "fwd-service.h" // 引入自定义队列
-#include "server-app.h"
+#include "ap/ap-app.h"
+#include "fwd/fwd-service.h" // 引入自定义队列
+#include "server/server-app.h"
 #include "status-util.h"
-#include "user-app.h"
+#include "user/user-app.h"
 
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -42,7 +42,7 @@
 #include "ns3/stats-module.h"
 #include "ns3/traffic-control-helper.h"
 #include "ns3/yans-wifi-helper.h"
-
+#include "ns3/flow-monitor-helper.h"
 #include <cstdlib>
 #include <ctime>
 using namespace ns3;
@@ -206,6 +206,9 @@ void setupNetwork(json& config)
     }
 
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+    // // 启用 FlowMonitor
+    // FlowMonitorHelper flowHelper;
+    // Ptr<FlowMonitor> monitor = flowHelper.InstallAll();
 
 
 }
@@ -312,7 +315,14 @@ int main(int argc, char *argv[])
         // Config::ConnectWithoutContext ("/NodeList/2/ApplicationList/0/$ns3::ApApp/APReceiveResponseFromServerTrace",
         //                  MakeCallback (&Logger::APReceiveResponseFromServerTrace, &logger));
 
+        Ptr<FlowMonitor> flowMonitor;
+        FlowMonitorHelper flowHelper;
+        flowMonitor = flowHelper.InstallAll();
+
         Simulator::Run();
+
+        flowMonitor->SerializeToXmlFile("NameOfFile.xml", true, true);
+
 
         Ptr<DataOutputInterface> output = nullptr;
         output = CreateObject<SqliteDataOutput>();

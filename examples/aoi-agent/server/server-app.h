@@ -1,9 +1,9 @@
 #ifndef SERVER_APP_H
 #define SERVER_APP_H
 
-#include "logger.h"
+#include "../logger.h"
+#include "../status-util.h"
 #include "server-queue.h"
-#include "status-util.h"
 
 #include "ns3/address.h"
 #include "ns3/application.h"
@@ -11,6 +11,7 @@
 #include "ns3/socket.h"
 
 #include <utility> // For std::pair
+
 namespace ns3 {
 
 class ServerApp : public Application

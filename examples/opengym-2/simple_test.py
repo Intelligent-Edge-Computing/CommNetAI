@@ -1,18 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import gym
+import gymnasium as gym
 import argparse
 import ns3gym
-
+from stable_baselines3 import A2C
 __author__ = "Piotr Gawlowicz"
 __copyright__ = "Copyright (c) 2018, Technische Universität Berlin"
 __version__ = "0.1.0"
 __email__ = "gawlowicz@tkn.tu-berlin.de"
 
+# env = gym.make("CartPole-v1", render_mode="rgb_array")
+#
+# model = A2C("MlpPolicy", env, verbose=1)
+# model.learn(total_timesteps=10_000)
+#
+# vec_env = model.get_env()
+# obs = vec_env.reset()
+# for i in range(1000):
+#     action, _state = model.predict(obs, deterministic=True)
+#     obs, reward, done, info = vec_env.step(action)
 
 env = gym.make('ns3-v0')
-env.reset()
+env.reset(seed=99)
 
 ob_space = env.observation_space
 ac_space = env.action_space
@@ -31,16 +41,16 @@ try:
 
         action = env.action_space.sample()
         print("---action: ", action)
-        obs, reward, done, info = env.step(action)
+        obs, reward, terminated, truncated, info = env.step(action)
 
         print("Step: ", stepIdx)
-        print("---obs, reward, done, info: ", obs, reward, done, info)
+        print("---obs, reward, terminated, info: ", obs, reward, terminated, info)
         myVector = obs["myVector"]
         myValue = obs["myValue"]
         print("---myVector: ", myVector)
         print("---myValue: ", myValue)
 
-        if done:
+        if terminated:
             break
 
 except KeyboardInterrupt:

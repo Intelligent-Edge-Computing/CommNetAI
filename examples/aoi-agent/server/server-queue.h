@@ -5,8 +5,8 @@
 #ifndef SERVER_QUEUE_H
 #define SERVER_QUEUE_H
 #include "ns3/address.h"
-#include "ns3/packet.h"
 #include "ns3/object.h"
+#include "ns3/packet.h"
 #include "ns3/ptr.h"
 
 #include <deque>

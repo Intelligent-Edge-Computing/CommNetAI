@@ -1,8 +1,8 @@
 #include "logger.h"
 
 #include "event-time-tag.h"
-#include "server-app.h"
-#include "server-queue.h"
+#include "server/server-app.h"
+#include "server/server-queue.h"
 #include "status-util.h"
 
 #include "ns3/application-container.h"

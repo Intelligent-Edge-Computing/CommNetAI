@@ -1,9 +1,9 @@
 #ifndef FWD_SERVICE_RATE_H
 #define FWD_SERVICE_RATE_H
 
-#include "ns3/core-module.h"
 #include "ns3/address.h"
 #include "ns3/application.h"
+#include "ns3/core-module.h"
 #include "ns3/event-id.h"
 #include "ns3/socket.h"
 

@@ -1,11 +1,12 @@
 #ifndef USER_APP_H
 #define USER_APP_H
 
-#include "ns3/application.h"
+#include "../logger.h"
+
 #include "ns3/address.h"
-#include "ns3/socket.h"
-#include "logger.h"
+#include "ns3/application.h"
 #include "ns3/random-variable-stream.h"
+#include "ns3/socket.h"
 
 namespace ns3 {
 
