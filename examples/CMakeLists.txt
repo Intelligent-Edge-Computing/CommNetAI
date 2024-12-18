@@ -1,4 +1,4 @@
-examples/CMakeLists.txtbuild_lib_example(
+build_lib_example(
   NAME interference-pattern
   SOURCE_FILES interference-pattern/mygym.cc
                interference-pattern/sim.cc
