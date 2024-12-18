@@ -69,10 +69,9 @@ get_agent.ac_space = ac_space
 try:
     while True:
         print("Start iteration: ", currIt)
-        obs = env.reset()
+        obs, info = env.reset()
         reward = 0
         done = False
-        info = None
         print("Step: ", stepIdx)
         print("---obs: ", obs)
 
@@ -85,8 +84,8 @@ try:
             print("---action: ", action)
 
             print("Step: ", stepIdx)
-            obs, reward, done, info = env.step(action)
-            print("---obs, reward, done, info: ", obs, reward, done, info)
+            obs, rewards, terminated, truncated, info = env.step(action)
+            print("---obs, reward, terminated, info: ", obs, reward, terminated, info)
 
             # get existing agent of create new TCP agent if needed
             tcpAgent = get_agent(obs)

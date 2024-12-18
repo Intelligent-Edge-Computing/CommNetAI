@@ -3,7 +3,11 @@
 
 import gym
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+# import tensorflow.contrib.slim as slim
+import tensorflow.compat.v1 as tf
+import tf_slim as slim
+from tensorflow.keras.optimizers import Adam
+
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -21,10 +25,14 @@ a_size = ac_space.n
 model = keras.Sequential()
 model.add(keras.layers.Dense(s_size, input_shape=(s_size,), activation='relu'))
 model.add(keras.layers.Dense(a_size, activation='softmax'))
-model.compile(optimizer=tf.train.AdamOptimizer(0.001),
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
-
+# model.compile(optimizer=tf.train.AdamOptimizer(0.001),
+#               loss='categorical_crossentropy',
+#               metrics=['accuracy'])
+model.compile(
+    optimizer=Adam(learning_rate=0.001),  # Use Adam optimizer from tf.keras
+    loss='categorical_crossentropy',     # Use categorical crossentropy loss
+    metrics=['accuracy']                 # Specify metrics
+)
 total_episodes = 200
 max_env_steps = 100
 env._max_episode_steps = max_env_steps
@@ -71,14 +79,14 @@ for e in range(total_episodes):
         state = next_state
         rewardsum += reward
         if epsilon > epsilon_min: epsilon *= epsilon_decay
-        
+
     time_history.append(time)
     rew_history.append(rewardsum)
 
 #for n in range(2 ** s_size):
 #    state = [n >> i & 1 for i in range(0, 2)]
 #    state = np.reshape(state, [1, s_size])
-#    print("state " + str(state) 
+#    print("state " + str(state)
 #        + " -> prediction " + str(model.predict(state)[0])
 #        )
 

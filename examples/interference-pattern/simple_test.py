@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import gym
+import gymnasium as gym
 import argparse
 from ns3gym import ns3env
 
@@ -31,12 +31,12 @@ try:
 
         action = env.action_space.sample()
         print("---action: ", action)
-        obs, reward, done, info = env.step(action)
+        obs, reward, terminated, truncated, info = env.step(action)
 
         print("Step: ", stepIdx)
-        print("---obs, reward, done, info: ", obs, reward, done, info)
+        print("---obs, reward, terminated, info: ", obs, reward, terminated, info)
 
-        if done:
+        if terminated:
             break
 
 except KeyboardInterrupt:

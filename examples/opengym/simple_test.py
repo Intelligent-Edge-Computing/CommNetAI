@@ -23,15 +23,15 @@ print("Action space: ", ac_space, ac_space.dtype)
 
 model = DQN("MlpPolicy", env, verbose=1)
 
-model.learn(total_timesteps=1000, log_interval=4)
+model.learn(total_timesteps=50, log_interval=4)
 
-# model.save("dqn_opengym")
-
+model.save("dqn_opengym")
 obs, info = env.reset(seed=99)
 try:
 
     while True:
-        action, _states = model.predict(obs, deterministic=True)
+        action, _states = model.predict(obs)
+
         obs, rewards, terminated, truncated, info = env.step(action)
         if terminated:
             break
