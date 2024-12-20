@@ -36,7 +36,7 @@ NS_OBJECT_ENSURE_REGISTERED (MyGymEnv);
 MyGymEnv::MyGymEnv ()
 {
   NS_LOG_FUNCTION (this);
-  m_interval = Seconds(0.1);
+  m_interval = MilliSeconds(1); //每m_interval与环境交互一次。
 
   Simulator::Schedule (Seconds(0.0), &MyGymEnv::ScheduleNextStateRead, this);
 }
@@ -103,26 +103,15 @@ MyGymEnv::GetObservationSpace()
 }
 
 /*
-Define action space
+    a \in {0,1}
 */
 Ptr<OpenGymSpace>
 MyGymEnv::GetActionSpace()
 {
-  uint32_t nodeNum = 5;
-  float low = 0.0;
-  float high = 10.0;
-  std::vector<uint32_t> shape = {nodeNum,};
-  std::string dtype = TypeNameGet<uint32_t> ();
-
-  Ptr<OpenGymDiscreteSpace> discrete = CreateObject<OpenGymDiscreteSpace> (nodeNum);
-  Ptr<OpenGymBoxSpace> box = CreateObject<OpenGymBoxSpace> (low, high, shape, dtype);
-
-  Ptr<OpenGymDictSpace> space = CreateObject<OpenGymDictSpace> ();
-  space->Add("myActionVector", box);
-  space->Add("myActionValue", discrete);
-
-  NS_LOG_UNCOND ("MyGetActionSpace: " << space);
-  return space;
+    uint32_t decisions = 2; // 0或1，发送或不发松
+    Ptr<OpenGymDiscreteSpace> space = CreateObject<OpenGymDiscreteSpace> (decisions);
+    NS_LOG_UNCOND ("MyGetActionSpace: " << space);
+    return space;
 }
 
 /*
