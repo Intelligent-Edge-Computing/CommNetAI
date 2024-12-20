@@ -44,7 +44,6 @@
 #include "ns3/yans-wifi-helper.h"
 #include "ns3/flow-monitor-helper.h"
 #include <cstdlib>
-#include <ctime>
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("CustomNetworkSimulation");
@@ -214,7 +213,7 @@ void setupNetwork(json& config)
 }
 
 void
-fdwPacketProbeTrace(std::string context, double oldVal, double newVal)
+fdwPacketProbeTrace(const std::string &context, double oldVal, double newVal)
 {
     std::cout << "context: " << context << " old " << oldVal << " new " << newVal << std::endl;
 }
@@ -234,10 +233,10 @@ int main(int argc, char *argv[])
 
     uint32_t numRuns = config["simulation"]["numRuns"];
     uint32_t startRunId = config["simulation"]["startRunId"];
-    uint32_t seed = 12345;
 
     for (uint32_t i = startRunId; i < numRuns; ++i)
     {
+        uint32_t seed = 12345;
         // 设置种子和运行编号
         SeedManager::SetSeed(seed);
         SeedManager::SetRun(i);

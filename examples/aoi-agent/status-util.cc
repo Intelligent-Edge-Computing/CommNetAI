@@ -116,8 +116,7 @@ std::string serialize(Status status) {
 
 
 json LoadConfig() {
-    // std::string file = "/Users/qijianpeng/Documents/git/ns3/ns-allinone-3.42/ns-3.42/scratch/aoi/settings.json";
-    std::string file = "/workspace/ns-3/scratch/aoi/settings.json";
+    std::string file = SETTINGS_JSON_PATH;
 
     std::ifstream inputFile(file);
     if (!inputFile.is_open()) {

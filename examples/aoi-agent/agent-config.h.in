@@ -1,0 +1,3 @@
+// config.h.in
+#define BUILD_DIR "@BUILD_DIR@"
+#define SETTINGS_JSON_PATH "@BUILD_DIR@/settings.json"

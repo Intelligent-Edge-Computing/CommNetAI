@@ -49,10 +49,17 @@ build_lib_example(
     ${libopengym}
 )
 
+# 将 settings.json 复制到构建目录
+configure_file(${CMAKE_SOURCE_DIR}/contrib/opengym/examples/aoi-agent/settings.json ${CMAKE_BINARY_DIR}/settings.json COPYONLY)
+set(BUILD_DIR "${CMAKE_BINARY_DIR}")
+# 生成 config.h 文件，并将构建目录路径写入其中
+configure_file(
+        ${CMAKE_SOURCE_DIR}/contrib/opengym/examples/aoi-agent/agent-config.h.in
+        ${CMAKE_BINARY_DIR}/contrib/opengym/examples/aoi-agent/agent-config.h
+)
 build_lib_example(
   NAME aoi-agent
   SOURCE_FILES aoi-agent/sim.cc
-#        aoi-agent/wo-agent-main.cc
         aoi-agent/ap/ap-app.cc
         aoi-agent/server/server-app.cc
         aoi-agent/user/user-app.cc
@@ -77,6 +84,7 @@ build_lib_example(
     ${libopengym}
     ${libflow-monitor}
 )
+target_include_directories(aoi-agent PRIVATE ${CMAKE_BINARY_DIR}/contrib/opengym/examples/aoi-agent/)
 
 build_lib_example(
   NAME rl-tcp

@@ -32,7 +32,7 @@ try:
     while True:
         action, _states = model.predict(obs)
 
-        obs, rewards, terminated, truncated, info = env.step(action)
+        obs, rewards, terminated, truncated, info = env.step(int(action))
         if terminated:
             break
 #

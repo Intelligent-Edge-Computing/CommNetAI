@@ -2,9 +2,11 @@
 #define STATUS_UTIL_GENERATOR_H
 
 #include "json.hpp"
+#include "agent-config.h"
 
 #include "ns3/core-module.h"
 #include "ns3/simulator.h"
+
 
 #include <atomic> // 添加头文件
 #include <cstdlib>
@@ -65,8 +67,7 @@ public:
     static json& GetConfig() {
         static json config;
         static bool isLoaded = false;
-        // std::string file = "/Users/qijianpeng/Documents/git/ns3/ns-allinone-3.42/ns-3.42/scratch/aoi/settings.json";
-        std::string file = "/workspace/ns-3/scratch/aoi/settings.json";
+        std::string file = SETTINGS_JSON_PATH;
 
         if (!isLoaded) {
             std::ifstream inputFile(file);
