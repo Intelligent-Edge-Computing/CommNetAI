@@ -53,9 +53,11 @@ ServerApp::ServerApp() : m_socket(0), m_logger(ConfigManager::GetConfig()["dbPat
     processSpeed = 2000; //2000 Cycles per Seconds
     m_requestQueue = CreateObject<ServerQueue>();
     m_requestQueue->set_max_capacity(m_queueCapacity);
+    m_resourceTracker.UpdateSeats(m_queueCapacity);
 }// 初始化 Logger
 
 ServerApp::~ServerApp() { m_socket = 0; }
+ServerResourceTracker::~ServerResourceTracker(){}
 
 void ServerApp::Setup(Ipv4Address address, uint16_t port, QueueStrategy strategy, uint32_t queueCapacity)
 {
@@ -248,6 +250,10 @@ Ptr<ServerQueue>& ServerApp::GetRequestQueue()
 {
     return m_requestQueue;
 }
+ServerResourceTracker ServerApp::GetServerResourceTracker()
+{
+    return m_resourceTracker;
+}
 // in ms
 uint32_t ServerApp::calcComputingDelay(Status request)
 {
@@ -306,14 +312,12 @@ void ServerApp::HandleRead(Ptr<Socket> socket)
                     packet->ReplacePacketTag(eventTimeTag);
                     m_serverReceiveRequestPacketTrace(packet);
                 }
-                if (currentRunning < m_queueCapacity)
+                // if (currentRunning < m_queueCapacity)
+                 if (m_resourceTracker.GetAvailableSeats() > 0)
                 {
                     currentRunning ++; // 正在执行的任务数加1
+                    m_resourceTracker.UpdateSeats(m_queueCapacity - currentRunning);
                     m_requestQueue->push_back(std::make_pair(from, packet));
-                    // std::ostringstream oss;
-                    // oss << InetSocketAddress::ConvertFrom(from).GetIpv4();
-
-                    // m_logger.logStateObservation("ServerApp-Received-Req", request.seqid);
                     NS_LOG_DEBUG("[Server] Queued request from " << InetSocketAddress::ConvertFrom(from).GetIpv4() << " at Time=" << Simulator::Now().As(Time::S));
 
                     // Schedule processing the queue if not already scheduled
@@ -321,9 +325,6 @@ void ServerApp::HandleRead(Ptr<Socket> socket)
                 }
                 else
                 { //允许的并发任务数到达上限，执行失败
-                    // std::ostringstream oss;
-                    // oss << InetSocketAddress::ConvertFrom(from).GetIpv4();
-                    // m_logger.Log("ServerApp", "Queue full, dropped request from: " + oss.str());
                     m_serverDropRequestPacketTrace(packet);
                     NS_LOG_INFO("[Server] Capacity full, dropped request PacketID=" << packet->GetUid() << " from " << InetSocketAddress::ConvertFrom(from).GetIpv4() << " at Time=" << Simulator::Now().As(Time::S));
                 }

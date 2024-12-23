@@ -32,7 +32,7 @@ try:
         action, _states = model.predict(obs)
 
         obs, rewards, terminated, truncated, info = env.step(int(action))
-        if terminated:
+        if terminated or truncated:
             break
 #
 except KeyboardInterrupt:

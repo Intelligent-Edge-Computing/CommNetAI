@@ -26,6 +26,23 @@
 #include "ns3/log.h"
 #include <sstream>
 #include <iostream>
+#include "ns3/network-module.h"
+#include "ns3/point-to-point-net-device.h"
+#include "ns3/internet-module.h"
+#include "ns3/ipv4-global-routing-helper.h"
+#include <algorithm>
+#include "ns3/node.h"
+#include "ns3/net-device.h"
+#include "ns3/channel.h"
+#include "ns3/ipv4.h"
+#include "ns3/ipv4-address.h"
+#include "ns3/ipv4-static-routing-helper.h"
+#include "ns3/ipv4-static-routing.h"
+#include "ns3/simulator.h"
+#include <limits>
+#include "../server/server-app.h"
+#include "../ap/ap-app.h"
+
 
 namespace ns3 {
 
@@ -79,27 +96,56 @@ MyGymEnv::DoDispose ()
   NS_LOG_FUNCTION (this);
 }
 
-/*
-Define observation space
+/*定义观测状态空间大小 8维空间：
+1. 计算节点状态 2D
+  当前服务能力并发数S_c, 取值{0,1,2,3,...,M_{S_c}}
+  当前服务能力状态（剩余并发数量）已经持续的时长\delta_t^c \in \{0, 1, 2, ..., M_c\}，上限M_c
+2. AP节点状态 3D
+  状态年龄∆t∈{0,1,2,…,∆}
+  ∆t前的状态内容（t-∆t时刻的服务节点剩余并发数）
+  \delta_t^u 用户上次访问距今的时长
+3. 网络状态 3D
+  a_t^{req} \in \{0,1\}，请求发送状态, 1代表在时刻t有请求，0则相反
+  s_t^d发送的数据量data大小，s_t^d\in\{0,1,2,\ldots,M_d\}分级、上取整，减少状态空间
+  s_t^{bw} backward信道状态：带宽分n级\{B_1,B_2,\ldots,B_n\}
 */
 Ptr<OpenGymSpace>
 MyGymEnv::GetObservationSpace()
 {
-  uint32_t nodeNum = 5;
-  float low = 0.0;
-  float high = 10.0;
-  std::vector<uint32_t> shape = {nodeNum,};
-  std::string dtype = TypeNameGet<uint32_t> ();
+    uint32_t parameterNum = 8; //8维空间
+    //Server
+    float service_capicity_low = 0.0;
+    float service_capicity_high = 2.0;
+    float service_capicity_holding_life_low = 0.0;
+    float service_capicity_holding_life_high = 1000.0;
 
-  Ptr<OpenGymDiscreteSpace> discrete = CreateObject<OpenGymDiscreteSpace> (nodeNum);
-  Ptr<OpenGymBoxSpace> box = CreateObject<OpenGymBoxSpace> (low, high, shape, dtype);
+    //AP
+    float ap_aoi_low = 0.0; //0是不实际的，传输过程的时延就已经大于0了。
+    float ap_aoi_high = 1000.0;//上限应当结合实际调整
+    float ap_service_capicity_low = service_capicity_low;
+    float ap_service_capicity_high = service_capicity_high;
+    float ap_delta_t_u_low = 0.0;
+    float ap_delta_t_u_high = 1000.0;
 
-  Ptr<OpenGymDictSpace> space = CreateObject<OpenGymDictSpace> ();
-  space->Add("myVector", box);
-  space->Add("myValue", discrete);
+    //Networking
+    float net_a_t_req_low = 0.0;
+    float net_a_t_req_high = 1.0;
+    float net_s_t_d_low = 1.0; //data size, rounded in Bytes, KiB, MiB, ...
+    float net_s_t_d_high = 1000.0;
+    float net_s_t_bw_low = 0.0;
+    DataRateValue dataRateValue = DataRate("1Mbps");
+    uint64_t bitRate = dataRateValue.Get().GetBitRate();
+    float net_s_t_bw_high = bitRate; //最大的链路带宽。NOTE：应该改为首先获取两节点路由，然后计算这条路由的最小（瓶颈）带宽
 
-  NS_LOG_UNCOND ("MyGetObservationSpace: " << space);
-  return space;
+    std::vector<float> low = {service_capicity_low, service_capicity_holding_life_low, ap_aoi_low, ap_service_capicity_low, ap_delta_t_u_low, net_a_t_req_low, net_s_t_d_low, net_s_t_bw_low};
+    std::vector<float> high = {service_capicity_high, service_capicity_holding_life_high, ap_aoi_high, ap_service_capicity_high, ap_delta_t_u_high, net_a_t_req_high, net_s_t_d_high, net_s_t_bw_high};
+
+    std::vector<uint32_t> shape = {parameterNum,};
+    std::string dtype = TypeNameGet<uint64_t> ();
+
+    Ptr<OpenGymBoxSpace> space = CreateObject<OpenGymBoxSpace> (low, high, shape, dtype);
+    NS_LOG_UNCOND ("MyGetObservationSpace: " << space);
+    return space;
 }
 
 /*
@@ -137,36 +183,35 @@ Collect observations
 Ptr<OpenGymDataContainer>
 MyGymEnv::GetObservation()
 {
-  uint32_t nodeNum = 5;
-  uint32_t low = 0.0;
-  uint32_t high = 10.0;
-  Ptr<UniformRandomVariable> rngInt = CreateObject<UniformRandomVariable> ();
+  uint32_t parameterNum = 8;
+  std::vector<uint32_t> shape = {parameterNum,};
+  Ptr<OpenGymBoxContainer<uint64_t> > box = CreateObject<OpenGymBoxContainer<uint64_t> >(shape);
+  Ptr<Node> serverNode = NodeList::GetNode(0);
+  Ptr<ServerApp> serverApp = serverNode->GetApplication(0)->GetObject<ServerApp>();
+  Ptr<Node> apNode = NodeList::GetNode(2);
+  Ptr<ApApp> apApp = apNode->GetApplication(0)->GetObject<ApApp>();
 
-  std::vector<uint32_t> shape = {nodeNum,};
-  Ptr<OpenGymBoxContainer<uint32_t> > box = CreateObject<OpenGymBoxContainer<uint32_t> >(shape);
+  ServerResourceTracker serverTracker = serverApp->GetServerResourceTracker();
+  float service_capicity = serverTracker.GetAvailableSeats();
+  float service_capicity_holding_life = serverTracker.GetDuration().GetMilliSeconds();
 
-  // generate random data
-  for (uint32_t i = 0; i<nodeNum; i++){
-    uint32_t value = rngInt->GetInteger(low, high);
-    box->AddValue(value);
-  }
+  //Server observiations
+  box->AddValue(service_capicity);
+  box->AddValue(service_capicity_holding_life);
 
-  Ptr<OpenGymDiscreteContainer> discrete = CreateObject<OpenGymDiscreteContainer>(nodeNum);
-  uint32_t value = rngInt->GetInteger(low, high);
-  discrete->SetValue(value);
+  //AP observiations
+//  box->AddValue(ap_aoi);
+//  box->AddValue(ap_service_capicity);
+//  box->AddValue(ap_delta_t_u);
 
-  Ptr<OpenGymDictContainer> data = CreateObject<OpenGymDictContainer> ();
-  data->Add("myVector",box);
-  data->Add("myValue",discrete);
+  //Networking observations
+//  box->AddValue(net_a_t_req);
+//  box->AddValue(net_s_t_d);
+//  box->AddValue(net_s_t_bw);
 
-  // Print data from tuple
-  Ptr<OpenGymBoxContainer<uint32_t> > mbox = DynamicCast<OpenGymBoxContainer<uint32_t> >(data->Get("myVector"));
-  Ptr<OpenGymDiscreteContainer> mdiscrete = DynamicCast<OpenGymDiscreteContainer>(data->Get("myValue"));
-  NS_LOG_UNCOND ("MyGetObservation: " << data);
-  NS_LOG_UNCOND ("---" << mbox);
-  NS_LOG_UNCOND ("---" << mdiscrete);
-
-  return data;
+  // Print data
+  NS_LOG_INFO ("MyGetObservation: " << box);
+  return box;
 }
 
 /*

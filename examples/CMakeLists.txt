@@ -67,6 +67,7 @@ build_lib_example(
         aoi-agent/logger.cc
         aoi-agent/fwd/fwd-service.cc
         aoi-agent/server/server-queue.cc
+        aoi-agent/gym/mygym.cc
         aoi-agent/ap/ap-app.h
         aoi-agent/server/server-app.h
         aoi-agent/user/user-app.h
@@ -77,6 +78,7 @@ build_lib_example(
         aoi-agent/event-time-tag.h
         aoi-agent/packet-type-tag.h
         aoi-agent/server/server-queue.h
+        aoi-agent/gym/mygym.h
   LIBRARIES_TO_LINK
     ${libcore}
     ${ns3-libs}
