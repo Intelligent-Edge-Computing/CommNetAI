@@ -61,6 +61,7 @@ build_lib_example(
   NAME aoi-agent
   SOURCE_FILES aoi-agent/sim.cc
         aoi-agent/ap/ap-app.cc
+        aoi-agent/ap/ap-running-info.cc
         aoi-agent/server/server-app.cc
         aoi-agent/user/user-app.cc
         aoi-agent/status-util.cc
@@ -69,6 +70,7 @@ build_lib_example(
         aoi-agent/server/server-queue.cc
         aoi-agent/gym/mygym.cc
         aoi-agent/ap/ap-app.h
+        aoi-agent/ap/ap-running-info.h
         aoi-agent/server/server-app.h
         aoi-agent/user/user-app.h
         aoi-agent/status-util.h

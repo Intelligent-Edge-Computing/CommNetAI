@@ -23,10 +23,29 @@
 #define MY_GYM_ENTITY_H
 
 #include "ns3/opengym-module.h"
-#include "ns3/nstime.h"
-
+#include "ns3/core-module.h"
 namespace ns3 {
+class ActionTracker {
+public:
+  ActionTracker() {}
+  ~ActionTracker() {}
 
+  Time GetActionTime() const {
+    return lastActionTime;
+  }
+  Ptr<OpenGymDataContainer> GetAction() const
+  {
+    return action;
+  }
+  void SaveAction(Ptr<OpenGymDataContainer>  a)
+  {
+    action = a;
+    lastActionTime = Simulator::Now();
+  }
+private:
+  Ptr<OpenGymDataContainer> action;
+  Time lastActionTime;   // 上次action的时间
+};
 class MyGymEnv : public OpenGymEnv
 {
 public:
@@ -35,6 +54,8 @@ public:
   virtual ~MyGymEnv ();
   static TypeId GetTypeId (void);
   virtual void DoDispose ();
+  virtual void DoInitialize (void);
+
 
   Ptr<OpenGymSpace> GetActionSpace();
   Ptr<OpenGymSpace> GetObservationSpace();
@@ -48,6 +69,7 @@ private:
   void ScheduleNextStateRead();
 
   Time m_interval;
+  ActionTracker m_actionTracker;
 };
 
 }

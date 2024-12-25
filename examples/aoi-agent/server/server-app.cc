@@ -65,6 +65,7 @@ void ServerApp::Setup(Ipv4Address address, uint16_t port, QueueStrategy strategy
     m_peerPort = port;
     m_strategy = strategy;
     m_queueCapacity = queueCapacity;
+    useAgent = ConfigManager::GetConfig()["Agent"];
 }
 // 设置随机过程，使用 Ptr<RandomVariableStream>
 void ServerApp::SetStochasticProcess(Ptr<RandomVariableStream> process)
@@ -153,7 +154,10 @@ void ServerApp::StartApplication(void)
     {
         m_processEvent = Simulator::Schedule(Seconds(0.1), &ServerApp::ProcessQueue, this);
     }
-    Simulator::Schedule(Seconds(0.1), &ServerApp::SendServiceStatus, this);
+    if (!useAgent)
+    {
+        Simulator::Schedule(Seconds(0.1), &ServerApp::SendServiceStatus, this);
+    }
 }
 void ServerApp::SendResultPacket(Ptr<Packet> packet, Address to, Status request, Status response)
 {
@@ -166,7 +170,7 @@ void ServerApp::SendResultPacket(Ptr<Packet> packet, Address to, Status request,
     m_socket->SendTo(packet, 0, to);
     m_serverReponseRequestPacketTrace(packet);
     // m_logger.logStateObservation("ServerApp-Responded (Req.Resp)", request.seqid + "." +response.seqid);
-    NS_LOG_INFO("Server: Processed and responded to request (PacketID=" << packet->GetUid() << ") from AP" << " at Time=" << Simulator::Now().As(Time::S));
+    NS_LOG_INFO("[Server]: Processed and responded to request (PacketID=" << packet->GetUid() << ") from AP" << " at Time=" << Simulator::Now().As(Time::S));
     NS_LOG_DEBUG(eventTimeTag.prettyResults());
 
 }
@@ -291,7 +295,10 @@ void ServerApp::SendServiceStatus(void)
     m_socket->SendTo(packet, 0, InetSocketAddress(m_peerAddress, m_peerPort));
     NS_LOG_DEBUG("[Server] Sent status (PacketID='" << packet->GetUid() << ") to AP" << ", at Time=" << Simulator::Now().As(Time::S));
 
-    Simulator::Schedule(GetRandomStatusUpdateInterval(), &ServerApp::SendServiceStatus, this); // Schedule next status
+    if (!useAgent)
+    {
+        Simulator::Schedule(GetRandomStatusUpdateInterval(), &ServerApp::SendServiceStatus, this); // Schedule next status
+    }
 }
 
 void ServerApp::HandleRead(Ptr<Socket> socket)

@@ -89,6 +89,8 @@ private:
     uint32_t processSpeed;    // 处理速度，CPU cycles
     Ptr<RandomVariableStream> m_statusUpdateRnd;
     uint64_t statusCounter = 0; // 状态更新计数器
+    bool useAgent = false;
+
     // uint64_t lastUpdateTimestamp = 0;
 };
 } // namespace ns3

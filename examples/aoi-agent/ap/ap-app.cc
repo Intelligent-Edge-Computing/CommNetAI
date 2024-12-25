@@ -27,6 +27,12 @@ TypeId ApApp::GetTypeId(void)
         .SetGroupName("Tutorial")
         .AddConstructor<ApApp>()
         // 注册 TraceSource
+
+        .AddAttribute ("ApActivityTracker",
+               "AP Activity Tracker.",
+               PointerValue (CreateObject<ApActivityTracker> ()),
+               MakePointerAccessor (&ApApp::m_apActivityTracker),
+               MakePointerChecker<ApApp> ())
         .AddTraceSource("APReceiveServerStatusPacketTrace",
                         "Triggered when a status packet is received and processed.",
                         MakeTraceSourceAccessor(&ApApp::m_APReceiveServerStatusPacketTrace),
@@ -56,6 +62,7 @@ void ApApp::Setup(Address serverAddress, uint16_t serverPort, uint16_t clientPor
     m_serverAddress = serverAddress;
     m_serverPort = serverPort;
     m_clientPort = clientPort;
+    m_apActivityTracker = CreateObject<ApActivityTracker> ();
 }
 
 void ApApp::StartApplication(void)
@@ -101,7 +108,6 @@ void ApApp::HandleRead(Ptr<Socket> socket)
                 {
                     if(m_storedStatus.generatedTime != -1)
                     {
-                        //Using callback to log Age.
                         //For the first status, we ignored. Because the timeline origin is started from the 1st status.
                         m_APReceiveServerStatusPacketTrace(m_storedStatusPacket,receivedNewPacket);
                     }
@@ -163,9 +169,29 @@ void ApApp::HandleRead(Ptr<Socket> socket)
                 m_APReceiveResponseFromServerTrace(receivedNewPacket);
                 NS_LOG_INFO("AP: Received response (PacketID=" << receivedNewPacket->GetUid() << ") from server at Time=" << Simulator::Now().As(Time::S));
             }
+            UpdateRunningInfo(receivedNewPacket);
         }
     }
 }
+void ApApp::UpdateRunningInfo(const Ptr<Packet> packet)
+{
+    NS_LOG_DEBUG("AP: Updating running info");
+    PacketTypeTag packetTypeTag;
+    if (packet->PeekPacketTag(packetTypeTag))
+    {
+        if(packetTypeTag.GetPacketType() == PacketType::SERVICE_STATUS)
+        {
+            m_apActivityTracker->UpdateStoredServiceStatusPacket(packet);
+        } else if (packetTypeTag.GetPacketType() == PacketType::USER_REQUEST)
+        {
+            m_apActivityTracker->UpdateStoredUserRequestPacket(packet);
+        } else if (packetTypeTag.GetPacketType() == PacketType::SERVICE_RESPONSE)
+        {
+            m_apActivityTracker->UpdateStoredServiceResponsePacket(packet);
+        }
+    }
+}
+
 Status ApApp::extractStatus(const Ptr<Packet> packet)
 {
 

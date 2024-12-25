@@ -2,7 +2,8 @@
   "simulation":{
     "stopTime": 15.0,
     "numRuns": 7000,
-    "startRunId": 1
+    "startRunId": 1,
+    "agent": false
   },
 
 

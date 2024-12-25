@@ -3,16 +3,16 @@
 
 #include "../logger.h"
 #include "../status-util.h"
-
+#include "ap-app.h"
 #include "ns3/address.h"
 #include "ns3/application.h"
 #include "ns3/socket.h"
 #include "ns3/tag.h" // 用于 QueueProcessTimeTag
 #include "ns3/trace-source-accessor.h"
+#include "ap-running-info.h"
 
 namespace ns3 {
-
-class ApApp : public Application
+  class ApApp : public Application
 {
 public:
     static TypeId GetTypeId();
@@ -20,6 +20,7 @@ public:
     virtual ~ApApp();
 
     void Setup(Address serverAddress, uint16_t serverPort, uint16_t clientPort);
+    void UpdateRunningInfo(const Ptr<Packet> packet);
     // TraceSource：用于捕获包到达并解析 QueueProcessTimeTag 的事件
 
     /**
@@ -51,9 +52,9 @@ private:
     uint16_t m_clientPort;
     Ptr<Packet> m_storedStatusPacket;
     Status m_storedStatus;
+    Ptr<ApActivityTracker> m_apActivityTracker;
     Logger m_logger; // 添加 Logger 成员
 };
-
 } // namespace ns3
 
 #endif // AP_APP_H
